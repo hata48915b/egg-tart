@@ -1,8 +1,8 @@
 ;;; Name:         egg-tart.el
-;;; Version:      v04
-;;; Time-stamp:   <2021.01.19-18:27:54-JST>
+;;; Version:      v05
+;;; Time-stamp:   <2025.07.26-13:06:20-JST>
 ;;;
-;;; Copyright (C) 2016-2021  Seiichiro HATA
+;;; Copyright (C) 2016-2025  Seiichiro HATA
 ;;;
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -18,33 +18,81 @@
 ;;; along with this program; if not, write to the Free Software
 ;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+;;;                                   概要
+;;;
+;;;   このファイルは、近時のEmacs（Emacs24.3以降）上で、egg（tamago）を使って
+;;; FreeWnnのJserverにアクセスして、かな漢字変換をするためのファイルです。
+;;;   eggの開発は止まっており、近時のEmacsでは動作しなくなってきています。
+;;;   そこで、このファイルは、eggを少しだけ修正して、最近のEmacs上で、最低限の
+;;; 動作をするようにするものです。
+;;;
 ;;;                                  使用法
 ;;;
-;;; (1) このファイルは"tamago-tsunagi-5.0.7.1"を前提としていますので，
-;;;   まず，"tamago-tsunagi-5.0.7.1"を"/usr"以下にインストールしてください。
+;;; (1) このファイルは最新のegg（"tamago-tsunagi-5.0.7.1"）を前提としていますので、
+;;;   下記のコマンドで、"tamago-tsunagi-5.0.7.1"を"/usr"以下にインストールします。
+;;;   root> tar xvfz tamago-tsunagi-5.0.7.1.tar.gz
+;;;   root> cd tamago-tsunagi-5.0.7.1
+;;;   root> mkdir /usr/local/share/emacs/site-lisp/egg
+;;;   root> mv egg its *.el /usr/local/share/emacs/site-lisp/egg/
+;;;     なお、"INSTALL"というファイルにインストールの手順が書かれていますので、
+;;;   その方法でインストールしても良いのですが、新しいEmacsではエラーになるため、
+;;;   インストールできなくなっています。
 ;;;
-;;; (2) このファイルを"/usr/share/emacs/site-lisp/egg/"にコピーしてください。
+;;; (2) もし"/usr/local/share/emacs/site-lisp/egg/egg-com.elc"（←最後に"c"あり）が
+;;;   あれば、削除します（なくても動きますし、あると新しいEmacsで誤作動します。）。
+;;;     なお、"/usr/local/share/emacs/site-lisp/egg/egg-com.el"（←最後に"c"なし）は
+;;;   必要ですので、削除しないでください。
+;;;   root> rm -f /usr/local/share/emacs/site-lisp/egg/egg-com.elc
 ;;;
-;;; (3)  "~/.emacs"又は"~/.emacs.el"又は"~/.emacs.d/init.el"に，
-;;;   ;;;======================================================;;;
-;;;   (add-to-list 'load-path "/usr/share/emacs/site-lisp/egg")
+;;; (3) このファイル（egg-tart.el）を、"/usr/local/share/emacs/site-lisp/egg/"に
+;;;   コピーしてください。
+;;;   root> cp -p egg-tart.el /usr/local/share/emacs/site-lisp/egg/
+;;;
+;;; (4)  "~/.emacs"又は"~/.emacs.el"又は"~/.emacs.d/init.el"に、
+;;;   ;;;=========================================================;;;
+;;;   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/egg")
+;;;   (if (not (fboundp 'make-coding-system))
+;;;       (defun make-coding-system (coding-system &rest rest)
+;;;         (define-coding-system coding-system ""
+;;;           :mnemonic ?w :coding-type 'charset)))
 ;;;   (require 'egg)
-;;;   (load "/usr/share/emacs/site-lisp/egg/leim-list")
-;;;   (load "/usr/share/emacs/site-lisp/egg/menudiag")
-;;;   (load "/usr/share/emacs/site-lisp/egg/egg-tart")
+;;;   (load "/usr/local/share/emacs/site-lisp/egg/leim-list")
+;;;   (load "/usr/local/share/emacs/site-lisp/egg/menudiag")
+;;;   (load "/usr/local/share/emacs/site-lisp/egg/egg-tart")
 ;;;   (setq default-input-method "japanese-egg-wnn")
 ;;;   (setq wnn-jserver "127.0.0.1")
 ;;;   (setq egg-default-startup-file "~/.eggrc.el")
-;;;   ;;;======================================================;;;
+;;;   ;;;=========================================================;;;
 ;;;   などと書き込んでください。
-;;;     なお，環境などに応じて，"127.0.0.1"を"localhost"に変えたり，
-;;;   "~/.eggrc.el"を"~/.emacs.d/.eggrc.el"に変えたりしてください。
+;;;     なお、環境などに応じて、"127.0.0.1"を"localhost"に変えたり、
+;;;   "~/.eggrc.el"を"~/.eggrc"又は"~/.emacs.d/.eggrc.el"に変えたり
+;;;   してください。
 ;;;
-;;; (4) "env XMODIFIERS= emacs"で"Emacs"を起動してください。
-;;;     これでだいたい使えると思います。
+;;; (5) FreeWnnのJserverを起動させておき、
+;;;   "env XMODIFIERS= emacs"で、"Emacs"を起動してください。
+;;;     これでたぶん使えると思います。
+;;;
+;;;   環境によっては、"/usr/local/share/emacs/site-lisp/egg"を
+;;; "/usr/share/emacs/site-lisp/egg"などにに変えてください。
+
+;;;======================================================;;;
+;;; "egg.el"と"menudiag.el"を修正
+
+(define-obsolete-variable-alias
+  'inactivate-current-input-method-function
+  'deactivate-current-input-method-function
+  "24.3")
+(define-obsolete-function-alias
+  'inactivate-input-method
+  'deactivate-input-method
+  "24.3")
 
 ;;;======================================================;;;
 ;;; "egg-cnv.el"を修正
+
+;; 形だけ定義していれば動くようですが、不具合があれば教えてください。
+(if (not (fboundp 'buffer-has-markers-at))
+    (defun buffer-has-markers-at (position)))
 
 (defun egg-backward-bunsetsu (n)
   (interactive "p")
@@ -109,5 +157,4 @@
 ;;; "egg-com.el"を修正
 
 ;; エラーを無視して，強制的にEmacsを終了します。
-;; 問題があれば，コメントアウトしてください。
 (defun egg-kill-emacs-function () (ignore-errors (egg-finalize-backend)))
