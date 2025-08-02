@@ -1,6 +1,6 @@
 ;;; Name:         egg-tart.el
 ;;; Version:      v05
-;;; Time-stamp:   <2025.07.26-13:06:20-JST>
+;;; Time-stamp:   <2025.08.03-06:02:54-JST>
 ;;;
 ;;; Copyright (C) 2016-2025  Seiichiro HATA
 ;;;
@@ -47,6 +47,8 @@
 ;;; (3) このファイル（egg-tart.el）を、"/usr/local/share/emacs/site-lisp/egg/"に
 ;;;   コピーしてください。
 ;;;   root> cp -p egg-tart.el /usr/local/share/emacs/site-lisp/egg/
+;;;   root> chmod 444 /usr/local/share/emacs/site-lisp/egg/egg-tart.el
+;;;   root> chown root:root /usr/local/share/emacs/site-lisp/egg/egg-tart.el
 ;;;
 ;;; (4)  "~/.emacs"又は"~/.emacs.el"又は"~/.emacs.d/init.el"に、
 ;;;   ;;;=========================================================;;;

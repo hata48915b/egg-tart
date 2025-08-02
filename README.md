@@ -81,6 +81,8 @@ sudo rm -f /usr/local/share/emacs/site-lisp/egg/egg-com.elc
 
 ``` sh
 sudo cp -p egg-tart.el /usr/local/share/emacs/site-lisp/egg/
+sudo chmod 444 /usr/local/share/emacs/site-lisp/egg/egg-tart.el
+sudo chown root:root /usr/local/share/emacs/site-lisp/egg/egg-tart.el
 ```
 
 ### 設定のインストール
